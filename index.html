@@ -16,6 +16,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,700;0,900;1,700&family=Syne:wght@400;600;700;800&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet"/>
   <script async src="https://www.googletagmanager.com/gtag/js?id=G-9TKK5G9NEH"></script>
   <script>window.dataLayer=window.dataLayer||[];function gtag(){dataLayer.push(arguments);}gtag('js',new Date());gtag('config','G-9TKK5G9NEH');</script>
+
   <style>
     *,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
     :root{
@@ -26,16 +27,36 @@
       --serif:'Playfair Display',Georgia,serif;
       --sans:'Syne',sans-serif;--mono:'JetBrains Mono',monospace;
     }
+
     html{scroll-behavior:smooth;overflow-x:hidden}
     body{background:var(--bg);color:var(--text1);font-family:var(--sans);overflow-x:hidden;}
     @media(pointer:fine){body{cursor:none}}
-    body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");opacity:.5;}
-    #cur{position:fixed;width:10px;height:10px;background:var(--red);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s,background .2s;mix-blend-mode:screen;display:none;}
+
+    /* GRAIN */
+    body::before{content:'';position:fixed;inset:0;pointer-events:none;z-index:9998;
+      background-image:url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.85' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.04'/%3E%3C/svg%3E");opacity:.5;}
+
+    /* CURSOR */
+    #cur{position:fixed;width:10px;height:10px;background:var(--red);border-radius:50%;pointer-events:none;z-index:9999;transform:translate(-50%,-50%);transition:width .2s,height .2s,background .2s,opacity .3s;mix-blend-mode:screen;display:none;}
     @media(pointer:fine){#cur{display:block}}
     #cur.h{width:40px;height:40px;background:rgba(200,75,49,.12);border:1.5px solid var(--red);}
     #cur.c{width:5px;height:5px;}
+
     ::-webkit-scrollbar{width:3px}::-webkit-scrollbar-thumb{background:var(--border2)}
-    /* NAV */
+
+    /* ============================================================
+       PROGRESS BAR
+    ============================================================ */
+    #progress-bar{
+      position:fixed;top:0;left:0;height:2px;width:0%;
+      background:linear-gradient(90deg,var(--red),var(--red2));
+      z-index:200;transition:width .1s linear;
+      box-shadow:0 0 8px var(--red);
+    }
+
+    /* ============================================================
+       NAV
+    ============================================================ */
     nav{position:fixed;top:0;left:0;right:0;z-index:100;display:flex;align-items:center;justify-content:space-between;padding:1.4rem 4vw;transition:background .3s,border-color .3s;}
     nav.stuck{background:rgba(10,9,8,.92);backdrop-filter:blur(20px);border-bottom:1px solid var(--border);}
     .nav-logo{font-family:var(--serif);font-size:1.05rem;color:var(--text1);text-decoration:none;display:flex;align-items:center;gap:10px;}
@@ -47,10 +68,118 @@
     .nav-links a:hover{color:var(--red);}
     .nav-hire{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;font-weight:700;padding:.5rem 1.1rem;border:1px solid var(--red);color:var(--red);text-decoration:none;border-radius:2px;transition:all .2s;}
     .nav-hire:hover{background:var(--red);color:#fff;}
-    /* HERO */
+
+    /* ============================================================
+       CHAPTER INDICATOR (floating side pills)
+    ============================================================ */
+    #chapter-indicator{
+      position:fixed;right:2.5rem;top:50%;transform:translateY(-50%);
+      z-index:100;display:flex;flex-direction:column;gap:.7rem;
+      opacity:0;transition:opacity .4s;
+    }
+    #chapter-indicator.visible{opacity:1;}
+    .ch-dot{
+      width:6px;height:6px;border-radius:50%;background:var(--border2);
+      cursor:pointer;transition:all .3s;position:relative;
+    }
+    .ch-dot.active{background:var(--red);transform:scale(1.5);}
+    .ch-dot:hover .ch-tooltip{opacity:1;transform:translateX(0);}
+    .ch-tooltip{
+      position:absolute;right:16px;top:50%;transform:translateY(-50%) translateX(6px);
+      background:var(--bg2);border:1px solid var(--border);border-radius:3px;
+      padding:.2rem .5rem;font-size:.6rem;font-family:var(--mono);
+      letter-spacing:.06em;text-transform:uppercase;color:var(--text2);
+      white-space:nowrap;opacity:0;transition:all .2s;pointer-events:none;
+    }
+    @media(max-width:900px){#chapter-indicator{display:none}}
+
+    /* ============================================================
+       SECTION WRAPPERS — each section is a scroll "chapter"
+    ============================================================ */
+    .chapter{
+      position:relative;min-height:100vh;
+      display:flex;flex-direction:column;justify-content:center;
+      padding:10rem 4vw 8rem;
+      overflow:hidden;
+    }
+    .chapter:first-of-type{padding-top:0;justify-content:flex-end;padding-bottom:6vh;}
+
+    /* ============================================================
+       CHAPTER EYEBROW — appears as you scroll in
+    ============================================================ */
+    .ch-eyebrow{
+      position:absolute;top:3rem;left:4vw;
+      display:flex;align-items:center;gap:1rem;
+      font-family:var(--mono);font-size:.62rem;letter-spacing:.14em;text-transform:uppercase;
+      color:var(--text3);opacity:0;transform:translateY(-10px);
+      transition:opacity .7s ease,transform .7s ease;
+    }
+    .ch-eyebrow.visible{opacity:1;transform:none;}
+    .ch-eyebrow::before{content:'';width:30px;height:1px;background:var(--border2);}
+    .ch-num{color:var(--red);}
+
+    /* ============================================================
+       STICKY SCROLLYTELL SECTION
+       On desktop: left side sticks, right side scrolls through frames
+    ============================================================ */
+    .sticky-wrap{
+      display:grid;grid-template-columns:1fr 1fr;gap:0;
+      min-height:100vh;position:relative;
+    }
+    .sticky-left{
+      position:sticky;top:0;height:100vh;
+      display:flex;flex-direction:column;justify-content:center;
+      padding:4rem 3rem 4rem 4vw;
+      border-right:1px solid var(--border);
+    }
+    .sticky-right{
+      padding:0;
+    }
+
+    /* SCROLLY FRAMES */
+    .scrolly-frame{
+      min-height:100vh;display:flex;flex-direction:column;
+      justify-content:center;padding:5rem 4rem 5rem 3rem;
+      border-bottom:1px solid var(--border);
+      opacity:.3;transition:opacity .5s ease;
+    }
+    .scrolly-frame:last-child{border-bottom:none;}
+    .scrolly-frame.active{opacity:1;}
+
+    .frame-num{
+      font-family:var(--serif);font-style:italic;font-size:5rem;
+      color:var(--border);line-height:1;margin-bottom:1.5rem;
+      transition:color .4s;
+    }
+    .scrolly-frame.active .frame-num{color:var(--red);}
+
+    .frame-title{
+      font-family:var(--serif);font-size:1.6rem;margin-bottom:.8rem;
+      line-height:1.2;
+    }
+    .frame-body{font-size:.9rem;color:var(--text2);line-height:1.8;margin-bottom:1.4rem;}
+
+    /* ============================================================
+       HERO
+    ============================================================ */
     #hero{min-height:100vh;display:flex;flex-direction:column;justify-content:flex-end;padding:0 4vw 6vh;position:relative;overflow:hidden;}
     .hero-bg{position:absolute;inset:0;z-index:0;background:radial-gradient(ellipse 60% 50% at 70% 40%,rgba(200,75,49,.07) 0%,transparent 70%),radial-gradient(ellipse 40% 40% at 20% 80%,rgba(200,75,49,.04) 0%,transparent 60%);}
-    .hero-grid{position:absolute;inset:0;z-index:0;background-image:linear-gradient(rgba(255,255,255,.015) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.015) 1px,transparent 1px);background-size:80px 80px;}
+    .hero-grid{position:absolute;inset:0;z-index:0;
+      background-image:linear-gradient(rgba(255,255,255,.015) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.015) 1px,transparent 1px);
+      background-size:80px 80px;}
+
+    /* animated glow orb */
+    .hero-orb{
+      position:absolute;width:600px;height:600px;border-radius:50%;
+      background:radial-gradient(circle,rgba(200,75,49,.08) 0%,transparent 70%);
+      top:50%;left:60%;transform:translate(-50%,-50%);
+      animation:orbFloat 8s ease-in-out infinite;z-index:0;
+    }
+    @keyframes orbFloat{
+      0%,100%{transform:translate(-50%,-50%) scale(1);}
+      50%{transform:translate(-48%,-52%) scale(1.08);}
+    }
+
     .hero-content{position:relative;z-index:1;}
     .hero-tag{font-family:var(--mono);font-size:.7rem;letter-spacing:.12em;color:var(--red);text-transform:uppercase;margin-bottom:1.6rem;display:flex;align-items:center;gap:10px;opacity:0;animation:riseIn .7s .1s ease forwards;}
     .hero-tag::before{content:'';width:40px;height:1px;background:var(--red);}
@@ -65,22 +194,37 @@
     .btn-p:hover{background:var(--red2);transform:translateY(-1px);}
     .btn-g{padding:.78rem 1.8rem;background:transparent;color:var(--text2);font-size:.78rem;font-weight:600;letter-spacing:.08em;text-transform:uppercase;text-decoration:none;border:1px solid var(--border2);border-radius:2px;transition:all .2s;}
     .btn-g:hover{border-color:var(--text2);color:var(--text1);}
-    .hero-scroll{position:absolute;bottom:3vh;right:4vw;z-index:1;writing-mode:vertical-rl;font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text3);font-family:var(--mono);display:flex;align-items:center;gap:10px;opacity:0;animation:fadeIn 1s 1s ease forwards;}
-    .hero-scroll::after{content:'';width:1px;height:50px;background:var(--text3);}
+    .hero-scroll{position:absolute;bottom:3vh;right:4vw;z-index:1;writing-mode:vertical-rl;font-size:.62rem;letter-spacing:.15em;text-transform:uppercase;color:var(--text3);font-family:var(--mono);display:flex;align-items:center;gap:10px;opacity:0;animation:fadeIn 1s 1.2s ease forwards;}
+    .hero-scroll::after{content:'';width:1px;height:50px;background:var(--text3);animation:growLine 1.5s 1.5s ease forwards;transform-origin:top;transform:scaleY(0);}
+    @keyframes growLine{to{transform:scaleY(1);}}
     @keyframes riseIn{from{opacity:0;transform:translateY(28px)}to{opacity:1;transform:none}}
     @keyframes fadeIn{from{opacity:0}to{opacity:1}}
-    /* MARQUEE */
+
+    /* ============================================================
+       MARQUEE
+    ============================================================ */
     .mq-wrap{border-top:1px solid var(--border);border-bottom:1px solid var(--border);overflow:hidden;background:var(--bg2);padding:.85rem 0;}
     .mq{display:flex;white-space:nowrap;animation:mq 24s linear infinite;}
     .mq-inner{display:flex;flex-shrink:0;}
     @keyframes mq{from{transform:translateX(0)}to{transform:translateX(-50%)}}
     .mqi{font-family:var(--mono);font-size:.68rem;letter-spacing:.08em;text-transform:uppercase;color:var(--text3);padding:0 2rem;display:flex;align-items:center;gap:1.5rem;}
     .mqi span{color:var(--red);font-size:.5rem;}
-    /* FEATURE */
-    #feature{padding:8rem 4vw;}
+
+    /* ============================================================
+       CHAPTER: FEATURED PROJECT — sticky scrollytell
+    ============================================================ */
+    #feature-wrap{
+      border-top:1px solid var(--border);
+      background:var(--bg);
+    }
+    #feature-intro{
+      padding:8rem 4vw 5rem;
+    }
     .feat-label{font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:1rem;}
-    .feat-h{font-family:var(--serif);font-size:clamp(2.2rem,4.5vw,3.6rem);line-height:1.06;letter-spacing:-.02em;margin-bottom:3.5rem;}
+    .feat-h{font-family:var(--serif);font-size:clamp(2.2rem,4.5vw,3.6rem);line-height:1.06;letter-spacing:-.02em;margin-bottom:.5rem;}
     .feat-h em{font-style:italic;color:var(--red);}
+
+    /* Project card (same as original but now embedded in sticky section) */
     .feat-card{display:grid;grid-template-columns:1fr 260px 1fr;gap:0;border:1px solid var(--border);border-radius:6px;overflow:hidden;background:var(--bg2);}
     .feat-left{padding:3rem;border-right:1px solid var(--border);display:flex;flex-direction:column;}
     .feat-pname{font-family:var(--serif);font-size:2.4rem;font-weight:700;line-height:1.05;margin-bottom:.4rem;}
@@ -95,7 +239,6 @@
     .fl:hover{border-color:var(--red);color:var(--red);}
     .fl.p{background:var(--red);border-color:var(--red);color:#fff;}
     .fl.p:hover{background:var(--red2);}
-    /* PHONE MOCKUP */
     .feat-mid{background:var(--bg3);border-right:1px solid var(--border);display:flex;align-items:center;justify-content:center;padding:2rem 1.2rem;position:relative;overflow:hidden;}
     .feat-mid::before{content:'';position:absolute;inset:0;background:radial-gradient(ellipse 80% 60% at 50% 50%,rgba(200,75,49,.08) 0%,transparent 70%);}
     .phone-wrap{position:relative;z-index:1;width:186px;}
@@ -137,7 +280,6 @@
     .pni-lbl{font-size:5px;font-family:var(--mono);color:#3A3630;letter-spacing:.05em;}
     .pni-lbl.a{color:#C84B31;}
     .pni-plus{width:28px;height:28px;background:#C84B31;border-radius:9px;display:flex;align-items:center;justify-content:center;box-shadow:0 4px 10px rgba(200,75,49,.4);font-size:14px;color:#fff;line-height:1;}
-    /* RIGHT */
     .feat-right{padding:3rem;background:var(--bg3);display:flex;flex-direction:column;gap:1.6rem;}
     .fr-label{font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--text3);margin-bottom:.6rem;}
     .tech-wrap{display:flex;flex-wrap:wrap;gap:.4rem;}
@@ -147,44 +289,138 @@
     .fi{display:flex;align-items:flex-start;gap:.7rem;font-size:.83rem;color:var(--text2);line-height:1.55;padding:.6rem;border-radius:3px;border:1px solid transparent;transition:all .15s;}
     .fi:hover{border-color:var(--border);background:var(--bg4);}
     .fi::before{content:'✓';color:var(--red);font-size:.7rem;font-family:var(--mono);font-weight:700;flex-shrink:0;margin-top:.15rem;}
-    /* ABOUT */
-    #about{border-top:1px solid var(--border);padding:8rem 4vw;display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:start;}
+
+    /* ============================================================
+       CHAPTER: ABOUT — big text scrollytell
+    ============================================================ */
+    #about-wrap{
+      border-top:1px solid var(--border);
+      background:var(--bg);
+    }
+
+    /* Big scrolling statement sentences */
+    .big-statement{
+      padding:8rem 4vw;
+      border-bottom:1px solid var(--border);
+      display:flex;flex-direction:column;justify-content:center;
+      min-height:60vh;
+      position:relative;overflow:hidden;
+    }
+    .big-statement::before{
+      content:attr(data-num);
+      position:absolute;right:4vw;top:50%;transform:translateY(-50%);
+      font-family:var(--serif);font-style:italic;font-size:clamp(6rem,16vw,18rem);
+      color:rgba(200,75,49,.04);line-height:1;pointer-events:none;
+      transition:color .5s;
+    }
+    .big-statement.active::before{color:rgba(200,75,49,.07);}
+
+    .stmt-tag{font-family:var(--mono);font-size:.65rem;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:1.5rem;opacity:0;transform:translateX(-16px);transition:opacity .5s .1s,transform .5s .1s;}
+    .big-statement.active .stmt-tag{opacity:1;transform:none;}
+
+    .stmt-text{
+      font-family:var(--serif);
+      font-size:clamp(1.8rem,4vw,3.5rem);
+      line-height:1.15;letter-spacing:-.02em;
+      color:var(--text3);
+      max-width:900px;
+    }
+    .stmt-text em{color:var(--text1);font-style:italic;}
+    .stmt-text strong{color:var(--red);font-style:normal;font-weight:700;}
+
+    /* word-by-word reveal */
+    .word{
+      display:inline-block;
+      opacity:0;transform:translateY(14px);
+      transition:opacity .4s ease,transform .4s ease;
+    }
+    .big-statement.active .word{opacity:1;transform:none;}
+
+    .stmt-aside{
+      margin-top:2rem;font-size:.9rem;color:var(--text2);line-height:1.7;max-width:520px;
+      opacity:0;transform:translateY(10px);transition:opacity .5s .3s,transform .5s .3s;
+    }
+    .big-statement.active .stmt-aside{opacity:1;transform:none;}
+
+    /* STAT STRIP */
+    .stat-strip{
+      display:grid;grid-template-columns:repeat(4,1fr);gap:1px;
+      background:var(--border);border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+    }
+    .ssc{
+      background:var(--bg2);padding:2.5rem 2rem;text-align:center;
+      transition:background .2s;
+    }
+    .ssc:hover{background:var(--bg3);}
+    .ssc-n{
+      font-family:var(--serif);font-size:clamp(2rem,4vw,3.5rem);
+      color:var(--red);line-height:1;margin-bottom:.4rem;
+    }
+    .ssc-l{font-family:var(--mono);font-size:.62rem;color:var(--text3);letter-spacing:.08em;text-transform:uppercase;}
+
+    /* Currently box */
+    .currently-section{
+      padding:6rem 4vw;
+    }
     .sec-label{font-family:var(--mono);font-size:.68rem;letter-spacing:.14em;text-transform:uppercase;color:var(--red);margin-bottom:1rem;}
     .sec-h{font-family:var(--serif);font-size:clamp(2rem,3.8vw,3rem);line-height:1.08;letter-spacing:-.02em;margin-bottom:2rem;}
     .sec-h em{font-style:italic;color:var(--red);}
-    .about-t{font-size:.93rem;color:var(--text2);line-height:1.8;margin-bottom:1.1rem;}
-    .about-t strong{color:var(--text1);font-weight:600;}
-    .stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:1px;background:var(--border);border:1px solid var(--border);border-radius:4px;overflow:hidden;margin-bottom:1.5rem;}
-    .sc{background:var(--bg2);padding:1.8rem 1.4rem;transition:background .15s;}
-    .sc:hover{background:var(--bg3);}
-    .sn{font-family:var(--serif);font-size:2.2rem;color:var(--red);line-height:1;margin-bottom:.25rem;}
-    .sl{font-family:var(--mono);font-size:.6rem;color:var(--text3);letter-spacing:.07em;text-transform:uppercase;}
-    .curr-box{border:1px solid var(--border);border-radius:4px;padding:1.4rem;background:var(--bg2);}
-    .curr-l{font-family:var(--mono);font-size:.6rem;color:var(--text3);letter-spacing:.1em;text-transform:uppercase;margin-bottom:1rem;}
-    .curr-i{display:flex;align-items:center;gap:.8rem;font-size:.84rem;color:var(--text2);padding:.45rem 0;border-bottom:1px solid var(--border);}
-    .curr-i:last-child{border-bottom:none;}
-    .cd{width:6px;height:6px;background:var(--red);border-radius:50%;flex-shrink:0;animation:pulse 2s infinite;}
-    /* SKILLS */
-    #skills{padding:8rem 4vw;border-top:1px solid var(--border);}
-    .skills-hdr{display:grid;grid-template-columns:1fr 1fr;gap:4rem;margin-bottom:3.5rem;align-items:end;}
-    .skills-sub{font-size:.93rem;color:var(--text2);line-height:1.7;}
-    .skills-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:4px;overflow:hidden;}
-    .sk-col{background:var(--bg2);padding:1.8rem 1.5rem;}
+    .curr-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:1rem;}
+    .curr-card{
+      border:1px solid var(--border);border-radius:4px;padding:1.4rem;
+      background:var(--bg2);display:flex;align-items:flex-start;gap:1rem;
+      transition:border-color .2s,background .2s;
+    }
+    .curr-card:hover{border-color:var(--border2);background:var(--bg3);}
+    .cd{width:7px;height:7px;background:var(--red);border-radius:50%;flex-shrink:0;margin-top:.35rem;animation:pulse 2s infinite;}
+    .curr-card-text{font-size:.86rem;color:var(--text2);line-height:1.6;}
+
+    /* ============================================================
+       CHAPTER: SKILLS
+    ============================================================ */
+    #skills-wrap{border-top:1px solid var(--border);}
+    .skills-intro{padding:8rem 4vw 4rem;}
+    .skills-grid-new{
+      display:grid;grid-template-columns:repeat(4,1fr);
+      gap:1px;background:var(--border);
+      border-top:1px solid var(--border);border-bottom:1px solid var(--border);
+    }
+    .sk-col{background:var(--bg2);padding:1.8rem 1.5rem;transition:background .2s;}
+    .sk-col:hover{background:var(--bg3);}
     .sk-title{font-family:var(--mono);font-size:.62rem;letter-spacing:.12em;text-transform:uppercase;color:var(--red);margin-bottom:1.2rem;padding-bottom:.8rem;border-bottom:1px solid var(--border);}
     .sk-list{list-style:none;display:flex;flex-direction:column;gap:.45rem;}
     .sk-list li{font-size:.84rem;color:var(--text2);padding:.35rem .5rem;border-radius:3px;transition:all .12s;display:flex;align-items:center;gap:.5rem;}
-    .sk-list li:hover{color:var(--text1);background:var(--bg3);}
+    .sk-list li:hover{color:var(--text1);background:var(--bg4);}
     .sk-list li::before{content:'›';color:var(--red);font-size:.9rem;}
-    /* PROJECTS */
-    #projects{padding:8rem 4vw;border-top:1px solid var(--border);}
-    .proj-hdr{display:flex;align-items:flex-end;justify-content:space-between;margin-bottom:3.5rem;gap:2rem;}
-    .proj-note{font-size:.84rem;color:var(--text3);max-width:240px;text-align:right;line-height:1.6;}
+
+    /* Skill bars */
+    .skill-bar-section{
+      padding:5rem 4vw;
+      display:grid;grid-template-columns:1fr 1fr;gap:4rem;
+    }
+    .sb-group{display:flex;flex-direction:column;gap:1.2rem;}
+    .sb-item{display:flex;flex-direction:column;gap:.5rem;}
+    .sb-label{display:flex;justify-content:space-between;font-family:var(--mono);font-size:.68rem;letter-spacing:.07em;text-transform:uppercase;color:var(--text2);}
+    .sb-pct{color:var(--red);}
+    .sb-track{height:2px;background:var(--border);border-radius:1px;overflow:hidden;}
+    .sb-fill{
+      height:100%;background:linear-gradient(90deg,var(--red),var(--red2));
+      width:0%;border-radius:1px;
+      transition:width 1.2s cubic-bezier(.25,.46,.45,.94);
+    }
+    .sb-item.reveal .sb-fill{/* width set inline */}
+
+    /* ============================================================
+       CHAPTER: PROJECTS
+    ============================================================ */
+    #projects-wrap{border-top:1px solid var(--border);}
+    .proj-intro{padding:8rem 4vw 4rem;}
     .proj-list{display:flex;flex-direction:column;}
-    .proj-row{display:grid;grid-template-columns:60px 1fr 80px;gap:2rem;align-items:start;padding:2.5rem 0;border-bottom:1px solid var(--border);text-decoration:none;color:inherit;position:relative;cursor:pointer;}
-    .proj-row::before{content:'';position:absolute;left:-4vw;right:-4vw;top:0;bottom:0;background:var(--bg2);opacity:0;transition:opacity .2s;}
+    .proj-row{display:grid;grid-template-columns:60px 1fr 80px;gap:2rem;align-items:start;padding:2.5rem 4vw;border-bottom:1px solid var(--border);text-decoration:none;color:inherit;position:relative;cursor:pointer;transition:padding-left .3s;}
+    .proj-row::before{content:'';position:absolute;left:0;right:0;top:0;bottom:0;background:var(--bg2);opacity:0;transition:opacity .2s;}
     .proj-row:hover::before{opacity:1;}
     .proj-row>*{position:relative;}
-    .proj-num{font-family:var(--serif);font-style:italic;font-size:1.5rem;color:var(--border2);padding-top:.1rem;}
+    .proj-num{font-family:var(--serif);font-style:italic;font-size:1.5rem;color:var(--border2);padding-top:.1rem;transition:color .2s;}
     .proj-row:hover .proj-num{color:var(--red);}
     .proj-name{font-family:var(--serif);font-size:1.45rem;margin-bottom:.35rem;transition:color .2s;}
     .proj-row:hover .proj-name{color:var(--red);}
@@ -193,8 +429,12 @@
     .pp{font-family:var(--mono);font-size:.6rem;padding:.18rem .55rem;background:var(--bg3);border:1px solid var(--border);border-radius:2px;color:var(--text3);}
     .proj-arr{text-align:right;font-size:1rem;color:var(--border2);padding-top:.3rem;transition:all .2s;}
     .proj-row:hover .proj-arr{color:var(--red);transform:translate(3px,-3px);}
-    /* CONTACT */
-    #contact{padding:8rem 4vw;border-top:1px solid var(--border);}
+
+    /* ============================================================
+       CHAPTER: CONTACT
+    ============================================================ */
+    #contact-wrap{border-top:1px solid var(--border);}
+    #contact{padding:8rem 4vw;}
     .contact-wrap{display:grid;grid-template-columns:1fr 1fr;gap:6rem;align-items:start;}
     .contact-note{font-size:.92rem;color:var(--text2);line-height:1.75;margin-bottom:1.5rem;}
     .avail{display:flex;align-items:center;gap:.7rem;padding:.9rem 1.1rem;border:1px solid rgba(200,75,49,.3);border-radius:3px;background:rgba(200,75,49,.05);font-size:.78rem;color:var(--text2);font-family:var(--mono);}
@@ -207,66 +447,108 @@
     .cl:hover .cl-icon{background:var(--red-glow);}
     .cl-lbl{font-size:.62rem;font-family:var(--mono);letter-spacing:.07em;text-transform:uppercase;color:var(--text3);margin-bottom:.2rem;}
     .cl-val{font-size:.86rem;font-weight:600;}
-    /* FOOTER */
+
+    /* ============================================================
+       FOOTER
+    ============================================================ */
     footer{border-top:1px solid var(--border);padding:2rem 4vw;display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:.62rem;color:var(--text3);letter-spacing:.05em;flex-wrap:wrap;gap:1rem;}
     .f-r{display:flex;align-items:center;gap:1.4rem;}
     .f-r a{color:var(--text3);text-decoration:none;transition:color .15s;}
     .f-r a:hover{color:var(--red);}
-    /* REVEAL */
-    .rev{opacity:0;transform:translateY(22px);transition:opacity .6s ease,transform .6s ease;}
-    .revl{opacity:0;transform:translateX(-22px);transition:opacity .6s ease,transform .6s ease;}
-    .revr{opacity:0;transform:translateX(22px);transition:opacity .6s ease,transform .6s ease;}
+
+    /* ============================================================
+       SCROLL REVEAL
+    ============================================================ */
+    .rev{opacity:0;transform:translateY(22px);transition:opacity .65s ease,transform .65s ease;}
+    .revl{opacity:0;transform:translateX(-22px);transition:opacity .65s ease,transform .65s ease;}
+    .revr{opacity:0;transform:translateX(22px);transition:opacity .65s ease,transform .65s ease;}
     .rev.vis,.revl.vis,.revr.vis{opacity:1;transform:none;}
-    .d1{transition-delay:.1s}.d2{transition-delay:.2s}.d3{transition-delay:.3s}
-    /* RESPONSIVE */
+    .d1{transition-delay:.1s}.d2{transition-delay:.2s}.d3{transition-delay:.3s}.d4{transition-delay:.4s}
+
+    /* ============================================================
+       CHAPTER TITLE OVERLAY — big centered text that fades as you scroll
+    ============================================================ */
+    .chapter-title-overlay{
+      position:sticky;top:0;z-index:10;
+      display:flex;align-items:center;justify-content:flex-start;
+      padding:1.5rem 4vw;
+      background:linear-gradient(to bottom,var(--bg) 60%,transparent);
+      pointer-events:none;
+    }
+    .cto-inner{
+      font-family:var(--mono);font-size:.65rem;letter-spacing:.18em;
+      text-transform:uppercase;color:var(--text3);
+      display:flex;align-items:center;gap:.8rem;
+    }
+    .cto-inner::before{content:'';width:20px;height:1px;background:var(--border2);}
+
+    /* ============================================================
+       RESPONSIVE
+    ============================================================ */
     @media(max-width:1100px){.feat-card{grid-template-columns:1fr 1fr}.feat-mid{display:none}}
     @media(max-width:900px){
       .feat-card{grid-template-columns:1fr}.feat-right{border-top:1px solid var(--border)}
-      #about{grid-template-columns:1fr;gap:3rem}
-      .skills-hdr{grid-template-columns:1fr;gap:1rem}
-      .skills-grid{grid-template-columns:1fr 1fr}
+      .skills-grid-new{grid-template-columns:1fr 1fr}
       .contact-wrap{grid-template-columns:1fr;gap:3rem}
-      .proj-hdr{flex-direction:column;align-items:flex-start}
-      .proj-note{text-align:left;max-width:100%}
+      .stat-strip{grid-template-columns:1fr 1fr}
+      .skill-bar-section{grid-template-columns:1fr;gap:2.5rem}
+      .curr-grid{grid-template-columns:1fr}
     }
     @media(max-width:640px){
       nav{padding:1.1rem 5vw}.nav-links{display:none}
       #hero{padding:0 5vw 5vh}.hero-name .l2{padding-left:0}
-      #feature,#about,#skills,#projects,#contact{padding:5rem 5vw}
       .feat-left,.feat-right{padding:1.8rem}
-      .skills-grid{grid-template-columns:1fr}
+      .skills-grid-new{grid-template-columns:1fr}
       .proj-row{grid-template-columns:40px 1fr}.proj-arr{display:none}
       footer{flex-direction:column;align-items:flex-start}
+      .big-statement{padding:5rem 5vw}
+      .stat-strip{grid-template-columns:1fr 1fr}
     }
     @media(max-width:420px){.hero-name{font-size:3.5rem}}
   </style>
 </head>
 <body>
 <div id="cur"></div>
+<div id="progress-bar"></div>
 
+<!-- CHAPTER INDICATOR -->
+<div id="chapter-indicator">
+  <div class="ch-dot active" data-target="hero"><span class="ch-tooltip">Intro</span></div>
+  <div class="ch-dot" data-target="feature-wrap"><span class="ch-tooltip">Work</span></div>
+  <div class="ch-dot" data-target="about-wrap"><span class="ch-tooltip">About</span></div>
+  <div class="ch-dot" data-target="skills-wrap"><span class="ch-tooltip">Skills</span></div>
+  <div class="ch-dot" data-target="projects-wrap"><span class="ch-tooltip">Projects</span></div>
+  <div class="ch-dot" data-target="contact-wrap"><span class="ch-tooltip">Contact</span></div>
+</div>
+
+<!-- NAV -->
 <nav id="nav">
   <a href="#hero" class="nav-logo"><div class="nav-dot"></div>Vansh Sharma</a>
   <div class="nav-r">
     <ul class="nav-links">
-      <li><a href="#feature">Projects</a></li>
-      <li><a href="#about">About</a></li>
-      <li><a href="#skills">Skills</a></li>
-      <li><a href="#contact">Contact</a></li>
+      <li><a href="#feature-wrap">Projects</a></li>
+      <li><a href="#about-wrap">About</a></li>
+      <li><a href="#skills-wrap">Skills</a></li>
+      <li><a href="#contact-wrap">Contact</a></li>
     </ul>
     <a href="mailto:vanshsharmaweb@gmail.com" class="nav-hire">Hire Me</a>
   </div>
 </nav>
 
+<!-- ============================================================
+     HERO
+============================================================ -->
 <section id="hero">
   <div class="hero-bg"></div>
   <div class="hero-grid"></div>
+  <div class="hero-orb"></div>
   <div class="hero-content">
     <div class="hero-tag">Full-Stack Developer &amp; CS Student · PSIT Kanpur</div>
     <h1 class="hero-name">Vansh<br><span class="l2"><em>Sharma.</em></span></h1>
     <div class="hero-bottom">
       <p class="hero-desc">I build <strong>production software</strong> — not just homework. From AI-powered social platforms to management systems, I ship real things that real people use.</p>
       <div class="hero-cta">
-        <a href="#feature" class="btn-p">See My Work</a>
+        <a href="#feature-wrap" class="btn-p">See My Work</a>
         <a href="mailto:vanshsharmaweb@gmail.com" class="btn-g">Get in Touch</a>
       </div>
     </div>
@@ -274,6 +556,7 @@
   <div class="hero-scroll">Scroll to explore</div>
 </section>
 
+<!-- MARQUEE -->
 <div class="mq-wrap">
   <div class="mq">
     <div class="mq-inner">
@@ -285,139 +568,190 @@
   </div>
 </div>
 
-<section id="feature">
-  <div class="rev">
+<!-- ============================================================
+     CHAPTER 1: FEATURED PROJECT
+============================================================ -->
+<div id="feature-wrap">
+  <div class="chapter-title-overlay"><div class="cto-inner">01 &mdash; Featured Work</div></div>
+  <div id="feature-intro" class="rev">
     <p class="feat-label">Featured Project — 2026</p>
     <h2 class="feat-h">Something I'm<br><em>genuinely proud of</em></h2>
   </div>
-  <div class="feat-card rev d2">
-    <div class="feat-left">
-      <h3 class="feat-pname">Campus<br>Confessions</h3>
-      <p class="feat-psub">Live · campusconfessions.fun</p>
-      <p class="feat-desc">A fully anonymous social platform for PSIT Kanpur students. Not a tutorial — a real deployed app with push notifications, AI moderation, voice posts, polls, a full admin panel, and a PWA install flow. Built solo from database schema to frontend.</p>
-      <div class="feat-stats">
-        <div class="fst"><div class="fst-n">15+</div><div class="fst-l">API Routes</div></div>
-        <div class="fst"><div class="fst-n">8+</div><div class="fst-l">DB Tables</div></div>
-        <div class="fst"><div class="fst-n">PWA</div><div class="fst-l">Installable</div></div>
+  <div style="padding:0 4vw 6rem;">
+    <div class="feat-card rev d1">
+      <div class="feat-left">
+        <h3 class="feat-pname">Campus<br>Confessions</h3>
+        <p class="feat-psub">Live · campusconfessions.fun</p>
+        <p class="feat-desc">A fully anonymous social platform for PSIT Kanpur students. Not a tutorial — a real deployed app with push notifications, AI moderation, voice posts, polls, a full admin panel, and a PWA install flow. Built solo from database schema to frontend.</p>
+        <div class="feat-stats">
+          <div class="fst"><div class="fst-n">15+</div><div class="fst-l">API Routes</div></div>
+          <div class="fst"><div class="fst-n">8+</div><div class="fst-l">DB Tables</div></div>
+          <div class="fst"><div class="fst-n">PWA</div><div class="fst-l">Installable</div></div>
+        </div>
+        <div class="feat-links">
+          <a href="https://campusconfessions.fun" target="_blank" rel="noopener" class="fl p">↗ View Live</a>
+          <a href="https://instagram.com/campusconfessions.in" target="_blank" rel="noopener" class="fl">📸 Instagram</a>
+        </div>
       </div>
-      <div class="feat-links">
-        <a href="https://campusconfessions.fun" target="_blank" rel="noopener" class="fl p">↗ View Live</a>
-        <a href="https://instagram.com/campusconfessions.in" target="_blank" rel="noopener" class="fl">📸 Instagram</a>
-      </div>
-    </div>
-
-    <!-- Phone Mockup -->
-    <div class="feat-mid">
-      <span class="phone-badge pb-live">Live Production</span>
-      <span class="phone-badge pb-ai">Groq AI</span>
-      <span class="phone-badge pb-pwa">PWA</span>
-      <div class="phone-wrap">
-        <div class="phone">
-          <div class="phone-top">
-            <div class="phone-notch"></div>
-            <div class="phone-status"><span>9:41</span><span>●●●</span></div>
-          </div>
-          <div class="phone-hdr">
-            <div class="ph-logo"><div class="ph-dot">🤫</div><div class="ph-name">Campus<span>Conf</span></div></div>
-            <div class="ph-icons"><div class="ph-i"></div><div class="ph-i"></div></div>
-          </div>
-          <div class="cotd-wrap">
-            <div class="cotd-l">🔥 Confession of the day</div>
-            <div class="cotd-t">mujhe apni crush se pyaar ho gaya hai aur woh meri best friend hai...</div>
-          </div>
-          <div class="pcard">
-            <div class="pm"><span class="pa">anon</span><span class="pn">#247</span><span class="ptag">#crush</span></div>
-            <div class="pt">Library mein ek banda hai, roz usi table pe baithta hai. Koi meri help karo 😭</div>
-            <div class="pac">
-              <div class="pr-group"><span class="pr a">❤️ 24</span><span class="pr">😂 8</span><span class="pr">🔥 12</span></div>
-              <div class="pc">💬 7</div>
+      <div class="feat-mid">
+        <span class="phone-badge pb-live">Live Production</span>
+        <span class="phone-badge pb-ai">Groq AI</span>
+        <span class="phone-badge pb-pwa">PWA</span>
+        <div class="phone-wrap">
+          <div class="phone">
+            <div class="phone-top"><div class="phone-notch"></div><div class="phone-status"><span>9:41</span><span>●●●</span></div></div>
+            <div class="phone-hdr">
+              <div class="ph-logo"><div class="ph-dot">🤫</div><div class="ph-name">Campus<span>Conf</span></div></div>
+              <div class="ph-icons"><div class="ph-i"></div><div class="ph-i"></div></div>
+            </div>
+            <div class="cotd-wrap">
+              <div class="cotd-l">🔥 Confession of the day</div>
+              <div class="cotd-t">mujhe apni crush se pyaar ho gaya hai aur woh meri best friend hai...</div>
+            </div>
+            <div class="pcard">
+              <div class="pm"><span class="pa">anon</span><span class="pn">#247</span><span class="ptag">#crush</span></div>
+              <div class="pt">Library mein ek banda hai, roz usi table pe baithta hai. Koi meri help karo 😭</div>
+              <div class="pac"><div class="pr-group"><span class="pr a">❤️ 24</span><span class="pr">😂 8</span><span class="pr">🔥 12</span></div><div class="pc">💬 7</div></div>
+            </div>
+            <div class="pcard">
+              <div class="pm"><span class="pa">anon</span><span class="pn">#246</span><span class="ptag">#hostel</span></div>
+              <div class="pt">Hostel mess ka khana khake samajh aaya — ghar ki maa ki roti ki koi substitute nahi.</div>
+              <div class="pac"><div class="pr-group"><span class="pr a">😢 41</span><span class="pr">❤️ 19</span></div><div class="pc">💬 15</div></div>
+            </div>
+            <div class="pnav">
+              <div class="pni"><div class="pni-ico a"></div><div class="pni-lbl a">Home</div></div>
+              <div class="pni"><div class="pni-ico"></div><div class="pni-lbl">Trend</div></div>
+              <div class="pni-plus">+</div>
+              <div class="pni"><div class="pni-ico"></div><div class="pni-lbl">Top</div></div>
+              <div class="pni"><div class="pni-ico"></div><div class="pni-lbl">Me</div></div>
             </div>
           </div>
-          <div class="pcard">
-            <div class="pm"><span class="pa">anon</span><span class="pn">#246</span><span class="ptag">#hostel</span></div>
-            <div class="pt">Hostel mess ka khana khake samajh aaya — ghar ki maa ki roti ki koi substitute nahi.</div>
-            <div class="pac">
-              <div class="pr-group"><span class="pr a">😢 41</span><span class="pr">❤️ 19</span></div>
-              <div class="pc">💬 15</div>
-            </div>
-          </div>
-          <div class="pnav">
-            <div class="pni"><div class="pni-ico a"></div><div class="pni-lbl a">Home</div></div>
-            <div class="pni"><div class="pni-ico"></div><div class="pni-lbl">Trend</div></div>
-            <div class="pni-plus">+</div>
-            <div class="pni"><div class="pni-ico"></div><div class="pni-lbl">Top</div></div>
-            <div class="pni"><div class="pni-ico"></div><div class="pni-lbl">Me</div></div>
+        </div>
+      </div>
+      <div class="feat-right">
+        <div>
+          <p class="fr-label">Tech Stack</p>
+          <div class="tech-wrap">
+            <span class="tt">Python / Flask</span><span class="tt">MySQL</span><span class="tt">Firebase FCM</span><span class="tt">Groq AI</span><span class="tt">Cloudinary</span><span class="tt">HTML/CSS/JS</span><span class="tt">Service Workers</span><span class="tt">Railway</span><span class="tt">Cloudflare</span><span class="tt">html2canvas</span>
           </div>
         </div>
-      </div>
-    </div>
-
-    <div class="feat-right">
-      <div>
-        <p class="fr-label">Tech Stack</p>
-        <div class="tech-wrap">
-          <span class="tt">Python / Flask</span><span class="tt">MySQL</span><span class="tt">Firebase FCM</span><span class="tt">Groq AI</span><span class="tt">Cloudinary</span><span class="tt">HTML/CSS/JS</span><span class="tt">Service Workers</span><span class="tt">Railway</span><span class="tt">Cloudflare</span><span class="tt">html2canvas</span>
-        </div>
-      </div>
-      <div>
-        <p class="fr-label">What's Inside</p>
-        <div class="feat-list">
-          <div class="fi">Anonymous confessions with AI moderation via Groq (LLaMA 3.1)</div>
-          <div class="fi">Voice posts with Cloudinary audio storage &amp; custom player</div>
-          <div class="fi">Push notifications via Firebase Cloud Messaging</div>
-          <div class="fi">Anonymous polls, emoji reactions, nested comment threads</div>
-          <div class="fi">Full admin dashboard — analytics, flagged posts, user bans</div>
-          <div class="fi">QueryChat — AI assistant with live site data access</div>
-          <div class="fi">PWA with offline support, install banner, service worker cache</div>
-          <div class="fi">Session-based anonymity, shadow-ban, image &amp; audio uploads</div>
+        <div>
+          <p class="fr-label">What's Inside</p>
+          <div class="feat-list">
+            <div class="fi">Anonymous confessions with AI moderation via Groq (LLaMA 3.1)</div>
+            <div class="fi">Voice posts with Cloudinary audio storage &amp; custom player</div>
+            <div class="fi">Push notifications via Firebase Cloud Messaging</div>
+            <div class="fi">Anonymous polls, emoji reactions, nested comment threads</div>
+            <div class="fi">Full admin dashboard — analytics, flagged posts, user bans</div>
+            <div class="fi">QueryChat — AI assistant with live site data access</div>
+            <div class="fi">PWA with offline support, install banner, service worker cache</div>
+            <div class="fi">Session-based anonymity, shadow-ban, image &amp; audio uploads</div>
+          </div>
         </div>
       </div>
     </div>
   </div>
-</section>
+</div>
 
-<section id="about">
-  <div class="revl">
-    <p class="sec-label">About Me</p>
-    <h2 class="sec-h">Building real things,<br>not just <em>studying</em> them</h2>
-    <p class="about-t">I'm a first-year B.Tech CS student at <strong>PSIT Kanpur</strong> who started coding in 2023 and hasn't stopped. I focus on projects with actual users and real problems.</p>
-    <p class="about-t">My stack spans <strong>Python backends, SQL databases, JavaScript frontends, and AI integrations</strong>. I'm comfortable with the full cycle — schema design, APIs, UI, deployment, and maintenance.</p>
-    <p class="about-t">Looking for <strong>internship opportunities</strong> where I can contribute meaningfully and grow alongside experienced engineers.</p>
-  </div>
-  <div class="revr d1">
-    <div class="stat-grid">
-      <div class="sc"><div class="sn">8.5</div><div class="sl">Current CGPA</div></div>
-      <div class="sc"><div class="sn">4★</div><div class="sl">HackerRank Python</div></div>
-      <div class="sc"><div class="sn">2023</div><div class="sl">Started Coding</div></div>
-      <div class="sc"><div class="sn">Solo</div><div class="sl">All built alone</div></div>
-    </div>
-    <div class="curr-box">
-      <p class="curr-l">Currently</p>
-      <div class="curr-i"><div class="cd"></div>Studying B.Tech CSE at PSIT Kanpur</div>
-      <div class="curr-i"><div class="cd"></div>Maintaining CampusConfessions in production</div>
-      <div class="curr-i"><div class="cd"></div>Deepening knowledge in AI &amp; ML</div>
-      <div class="curr-i"><div class="cd"></div>Open to internship opportunities</div>
-    </div>
-  </div>
-</section>
+<!-- ============================================================
+     CHAPTER 2: ABOUT — scrollytell statements
+============================================================ -->
+<div id="about-wrap">
+  <div class="chapter-title-overlay"><div class="cto-inner">02 &mdash; About Me</div></div>
 
-<section id="skills">
-  <div class="skills-hdr">
-    <div class="revl"><p class="sec-label">Skills</p><h2 class="sec-h">What I <em>actually</em><br>work with</h2></div>
-    <p class="skills-sub revr">Not just languages I've heard of — tools I've shipped real projects with.</p>
+  <!-- Statement 1 -->
+  <div class="big-statement" data-num="I">
+    <p class="stmt-tag">Who I am</p>
+    <p class="stmt-text" data-words="true">
+      I'm a <em>first-year</em> CS student at PSIT Kanpur who <strong>started building</strong> in 2023 — and hasn't stopped since.
+    </p>
+    <p class="stmt-aside">Not just studying theory. I focus on projects with actual users and real problems that need solving.</p>
   </div>
-  <div class="skills-grid rev d1">
+
+  <!-- Statement 2 -->
+  <div class="big-statement" data-num="II">
+    <p class="stmt-tag">What I do</p>
+    <p class="stmt-text" data-words="true">
+      Python backends. SQL databases. JavaScript frontends. <strong>AI integrations.</strong> I'm comfortable with the <em>full stack</em> — from schema to deployment.
+    </p>
+    <p class="stmt-aside">Schema design, REST APIs, UI, deployment, and ongoing maintenance. Solo, start to finish.</p>
+  </div>
+
+  <!-- Statement 3 -->
+  <div class="big-statement" data-num="III">
+    <p class="stmt-tag">What I want</p>
+    <p class="stmt-text" data-words="true">
+      Looking for <strong>internship opportunities</strong> where I can contribute <em>meaningfully</em> and grow alongside experienced engineers.
+    </p>
+    <p class="stmt-aside">Kanpur-based, open to remote. Available for internships and freelance projects.</p>
+  </div>
+
+  <!-- Stats Strip -->
+  <div class="stat-strip">
+    <div class="ssc rev"><div class="ssc-n" data-count="8.5">0</div><div class="ssc-l">Current CGPA</div></div>
+    <div class="ssc rev d1"><div class="ssc-n">4★</div><div class="ssc-l">HackerRank Python</div></div>
+    <div class="ssc rev d2"><div class="ssc-n">2023</div><div class="ssc-l">Started Coding</div></div>
+    <div class="ssc rev d3"><div class="ssc-n">Solo</div><div class="ssc-l">All built alone</div></div>
+  </div>
+
+  <!-- Currently -->
+  <div class="currently-section">
+    <p class="sec-label rev">Right now</p>
+    <h2 class="sec-h rev d1">Currently <em>active on</em></h2>
+    <div class="curr-grid">
+      <div class="curr-card rev"><div class="cd"></div><div class="curr-card-text">Studying B.Tech CSE at PSIT Kanpur</div></div>
+      <div class="curr-card rev d1"><div class="cd"></div><div class="curr-card-text">Maintaining CampusConfessions in production</div></div>
+      <div class="curr-card rev d2"><div class="cd"></div><div class="curr-card-text">Deepening knowledge in AI &amp; ML</div></div>
+      <div class="curr-card rev d3"><div class="cd"></div><div class="curr-card-text">Open to internship opportunities</div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     CHAPTER 3: SKILLS
+============================================================ -->
+<div id="skills-wrap">
+  <div class="chapter-title-overlay"><div class="cto-inner">03 &mdash; Skills</div></div>
+  <div class="skills-intro">
+    <p class="sec-label rev">What I work with</p>
+    <h2 class="sec-h rev d1">Not just languages I've <em>heard of</em> —<br>tools I've shipped real projects with.</h2>
+  </div>
+
+  <div class="skills-grid-new rev d2">
     <div class="sk-col"><div class="sk-title">Languages</div><ul class="sk-list"><li>Python</li><li>JavaScript</li><li>C++</li><li>C</li><li>SQL</li></ul></div>
     <div class="sk-col"><div class="sk-title">Backend / DB</div><ul class="sk-list"><li>Flask</li><li>MySQL</li><li>REST APIs</li><li>Firebase Admin</li><li>Cloudinary SDK</li></ul></div>
     <div class="sk-col"><div class="sk-title">Frontend / Web</div><ul class="sk-list"><li>HTML5 / CSS3</li><li>Vanilla JS</li><li>Service Workers</li><li>PWA / Manifest</li><li>Responsive Design</li></ul></div>
     <div class="sk-col"><div class="sk-title">Tools &amp; Cloud</div><ul class="sk-list"><li>Git / GitHub</li><li>Railway</li><li>Cloudflare</li><li>Groq AI (LLaMA)</li><li>VS Code</li></ul></div>
   </div>
-</section>
 
-<section id="projects">
-  <div class="proj-hdr">
-    <div class="revl"><p class="sec-label">Other Work</p><h2 class="sec-h">More <em>projects</em></h2></div>
-    <p class="proj-note revr">Earlier work focused on core programming fundamentals and data structures.</p>
+  <!-- Animated skill bars -->
+  <div class="skill-bar-section">
+    <div class="sb-group">
+      <p class="sec-label" style="margin-bottom:1.5rem;">Proficiency</p>
+      <div class="sb-item" data-pct="90"><div class="sb-label"><span>Python</span><span class="sb-pct">90%</span></div><div class="sb-track"><div class="sb-fill" style="--target:90%"></div></div></div>
+      <div class="sb-item" data-pct="82"><div class="sb-label"><span>JavaScript</span><span class="sb-pct">82%</span></div><div class="sb-track"><div class="sb-fill" style="--target:82%"></div></div></div>
+      <div class="sb-item" data-pct="85"><div class="sb-label"><span>Flask + MySQL</span><span class="sb-pct">85%</span></div><div class="sb-track"><div class="sb-fill" style="--target:85%"></div></div></div>
+      <div class="sb-item" data-pct="75"><div class="sb-label"><span>C / C++</span><span class="sb-pct">75%</span></div><div class="sb-track"><div class="sb-fill" style="--target:75%"></div></div></div>
+    </div>
+    <div class="sb-group">
+      <p class="sec-label" style="margin-bottom:1.5rem;">Familiarity</p>
+      <div class="sb-item" data-pct="80"><div class="sb-label"><span>Firebase / Cloud Services</span><span class="sb-pct">80%</span></div><div class="sb-track"><div class="sb-fill" style="--target:80%"></div></div></div>
+      <div class="sb-item" data-pct="72"><div class="sb-label"><span>AI / LLM Integration</span><span class="sb-pct">72%</span></div><div class="sb-track"><div class="sb-fill" style="--target:72%"></div></div></div>
+      <div class="sb-item" data-pct="88"><div class="sb-label"><span>REST API Design</span><span class="sb-pct">88%</span></div><div class="sb-track"><div class="sb-fill" style="--target:88%"></div></div></div>
+      <div class="sb-item" data-pct="78"><div class="sb-label"><span>PWA / Service Workers</span><span class="sb-pct">78%</span></div><div class="sb-track"><div class="sb-fill" style="--target:78%"></div></div></div>
+    </div>
+  </div>
+</div>
+
+<!-- ============================================================
+     CHAPTER 4: MORE PROJECTS
+============================================================ -->
+<div id="projects-wrap">
+  <div class="chapter-title-overlay"><div class="cto-inner">04 &mdash; Other Work</div></div>
+  <div class="proj-intro">
+    <p class="sec-label rev">Earlier work</p>
+    <h2 class="sec-h rev d1">More <em>projects</em></h2>
+    <p style="font-size:.88rem;color:var(--text3);margin-top:.5rem;" class="rev d2">Focused on core programming fundamentals and data structures.</p>
   </div>
   <div class="proj-list">
     <a class="proj-row rev" href="https://github.com/VANSH-SHARMA-web/PYTHON" target="_blank" rel="noopener">
@@ -436,24 +770,30 @@
       <div class="proj-arr" style="color:var(--border2)">—</div>
     </div>
   </div>
-</section>
+</div>
 
-<section id="contact">
-  <div class="contact-wrap">
-    <div class="revl">
-      <p class="sec-label">Contact</p>
-      <h2 class="sec-h">Let's build<br>something<br><em>together</em></h2>
-      <p class="contact-note">I'm actively looking for internship opportunities and interesting collaborations. If you have a project that needs a developer who ships, I'd love to talk.</p>
-      <div class="avail">Available for internships &amp; freelance — Kanpur / Remote</div>
+<!-- ============================================================
+     CHAPTER 5: CONTACT
+============================================================ -->
+<div id="contact-wrap">
+  <div class="chapter-title-overlay"><div class="cto-inner">05 &mdash; Contact</div></div>
+  <section id="contact">
+    <div class="contact-wrap">
+      <div class="revl">
+        <p class="sec-label">Get in touch</p>
+        <h2 class="sec-h">Let's build<br>something<br><em>together</em></h2>
+        <p class="contact-note">I'm actively looking for internship opportunities and interesting collaborations. If you have a project that needs a developer who ships, I'd love to talk.</p>
+        <div class="avail">Available for internships &amp; freelance — Kanpur / Remote</div>
+      </div>
+      <div class="clinks revr d1">
+        <a href="mailto:vanshsharmaweb@gmail.com" class="cl"><div class="cl-icon">✉</div><div><div class="cl-lbl">Email</div><div class="cl-val">vanshsharmaweb@gmail.com</div></div></a>
+        <a href="https://www.linkedin.com/in/vansharmaweb" target="_blank" rel="noopener" class="cl"><div class="cl-icon" style="font-family:var(--sans);font-weight:800;font-size:.72rem;">in</div><div><div class="cl-lbl">LinkedIn</div><div class="cl-val">linkedin.com/in/vansharmaweb</div></div></a>
+        <a href="https://github.com/VANSH-SHARMA-web" target="_blank" rel="noopener" class="cl"><div class="cl-icon">⌥</div><div><div class="cl-lbl">GitHub</div><div class="cl-val">github.com/VANSH-SHARMA-web</div></div></a>
+        <a href="tel:8601257128" class="cl"><div class="cl-icon">↗</div><div><div class="cl-lbl">Phone</div><div class="cl-val">+91 86012 57128</div></div></a>
+      </div>
     </div>
-    <div class="clinks revr d1">
-      <a href="mailto:vanshsharmaweb@gmail.com" class="cl"><div class="cl-icon">✉</div><div><div class="cl-lbl">Email</div><div class="cl-val">vanshsharmaweb@gmail.com</div></div></a>
-      <a href="https://www.linkedin.com/in/vansharmaweb" target="_blank" rel="noopener" class="cl"><div class="cl-icon" style="font-family:var(--sans);font-weight:800;font-size:.72rem;">in</div><div><div class="cl-lbl">LinkedIn</div><div class="cl-val">linkedin.com/in/vansharmaweb</div></div></a>
-      <a href="https://github.com/VANSH-SHARMA-web" target="_blank" rel="noopener" class="cl"><div class="cl-icon">⌥</div><div><div class="cl-lbl">GitHub</div><div class="cl-val">github.com/VANSH-SHARMA-web</div></div></a>
-      <a href="tel:8601257128" class="cl"><div class="cl-icon">↗</div><div><div class="cl-lbl">Phone</div><div class="cl-val">+91 86012 57128</div></div></a>
-    </div>
-  </div>
-</section>
+  </section>
+</div>
 
 <footer>
   <span>© 2025–2026 Vansh Sharma · Kanpur, UP</span>
@@ -465,20 +805,168 @@
 </footer>
 
 <script>
-  const cur=document.getElementById('cur');
-  if(window.matchMedia('(pointer:fine)').matches){
-    document.addEventListener('mousemove',e=>{cur.style.left=e.clientX+'px';cur.style.top=e.clientY+'px';});
-    document.addEventListener('mousedown',()=>cur.classList.add('c'));
-    document.addEventListener('mouseup',()=>cur.classList.remove('c'));
-    document.querySelectorAll('a,button,.proj-row,.cl,.fl,.sc,.sk-list li,.tt').forEach(el=>{
-      el.addEventListener('mouseenter',()=>cur.classList.add('h'));
-      el.addEventListener('mouseleave',()=>cur.classList.remove('h'));
-    });
+/* ============================================================
+   CURSOR
+============================================================ */
+const cur = document.getElementById('cur');
+if(window.matchMedia('(pointer:fine)').matches){
+  document.addEventListener('mousemove', e => {
+    cur.style.left = e.clientX + 'px';
+    cur.style.top  = e.clientY + 'px';
+  });
+  document.addEventListener('mousedown', () => cur.classList.add('c'));
+  document.addEventListener('mouseup',   () => cur.classList.remove('c'));
+  document.querySelectorAll('a,button,.proj-row,.cl,.fl,.sc,.sk-list li,.tt,.curr-card,.ch-dot').forEach(el => {
+    el.addEventListener('mouseenter', () => cur.classList.add('h'));
+    el.addEventListener('mouseleave', () => cur.classList.remove('h'));
+  });
+}
+
+/* ============================================================
+   NAV STUCK
+============================================================ */
+const navEl = document.getElementById('nav');
+window.addEventListener('scroll', () => {
+  navEl.classList.toggle('stuck', window.scrollY > 40);
+}, {passive:true});
+
+/* ============================================================
+   PROGRESS BAR
+============================================================ */
+const bar = document.getElementById('progress-bar');
+window.addEventListener('scroll', () => {
+  const pct = window.scrollY / (document.body.scrollHeight - window.innerHeight) * 100;
+  bar.style.width = pct + '%';
+}, {passive:true});
+
+/* ============================================================
+   CHAPTER DOTS
+============================================================ */
+const chapterIds = ['hero','feature-wrap','about-wrap','skills-wrap','projects-wrap','contact-wrap'];
+const dots = document.querySelectorAll('.ch-dot');
+const indicator = document.getElementById('chapter-indicator');
+
+dots.forEach((dot, i) => {
+  dot.addEventListener('click', () => {
+    document.getElementById(chapterIds[i])?.scrollIntoView({behavior:'smooth'});
+  });
+});
+
+function updateChapterDots(){
+  const scrollMid = window.scrollY + window.innerHeight * 0.45;
+  let active = 0;
+  chapterIds.forEach((id, i) => {
+    const el = document.getElementById(id);
+    if(!el) return;
+    if(el.offsetTop <= scrollMid) active = i;
+  });
+  dots.forEach((d,i) => d.classList.toggle('active', i===active));
+
+  // Show indicator after first scroll
+  indicator.classList.toggle('visible', window.scrollY > 200);
+}
+
+window.addEventListener('scroll', updateChapterDots, {passive:true});
+updateChapterDots();
+
+/* ============================================================
+   SCROLL REVEAL (generic)
+============================================================ */
+const revObs = new IntersectionObserver(entries => {
+  entries.forEach(e => { if(e.isIntersecting) e.target.classList.add('vis'); });
+}, {threshold: 0.08});
+document.querySelectorAll('.rev,.revl,.revr').forEach(el => revObs.observe(el));
+
+/* ============================================================
+   BIG STATEMENT WORD REVEAL + ACTIVE
+============================================================ */
+document.querySelectorAll('.big-statement').forEach(stmt => {
+  // Wrap each word in .word spans
+  const p = stmt.querySelector('.stmt-text[data-words]');
+  if(p){
+    const html = p.innerHTML;
+    // Split preserving HTML tags
+    let result = '';
+    let inTag = false;
+    let word = '';
+    let delay = 0;
+
+    // Simple approach: split text nodes only
+    function wrapWords(node){
+      if(node.nodeType === 3){ // text node
+        const words = node.textContent.split(/(\s+)/);
+        let frag = document.createDocumentFragment();
+        words.forEach(w => {
+          if(/\s+/.test(w)){
+            frag.appendChild(document.createTextNode(w));
+          } else if(w.length > 0){
+            const span = document.createElement('span');
+            span.className = 'word';
+            span.style.transitionDelay = (delay * 0.05) + 's';
+            span.textContent = w;
+            frag.appendChild(span);
+            delay++;
+          }
+        });
+        node.parentNode.replaceChild(frag, node);
+      } else if(node.nodeType === 1 && node.nodeName !== 'SCRIPT'){
+        Array.from(node.childNodes).forEach(wrapWords);
+      }
+    }
+    wrapWords(p);
   }
-  const nav=document.getElementById('nav');
-  window.addEventListener('scroll',()=>nav.classList.toggle('stuck',window.scrollY>40),{passive:true});
-  const obs=new IntersectionObserver(entries=>{entries.forEach(e=>{if(e.isIntersecting)e.target.classList.add('vis');});},{threshold:0.08});
-  document.querySelectorAll('.rev,.revl,.revr').forEach(el=>obs.observe(el));
+});
+
+// Intersection for statements
+const stmtObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    e.target.classList.toggle('active', e.isIntersecting);
+  });
+}, {threshold: 0.3});
+document.querySelectorAll('.big-statement').forEach(el => stmtObs.observe(el));
+
+/* ============================================================
+   SKILL BAR ANIMATION
+============================================================ */
+const sbObs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if(e.isIntersecting){
+      e.target.querySelectorAll('.sb-fill').forEach(fill => {
+        const target = fill.style.getPropertyValue('--target');
+        // animate
+        let start = null;
+        const pct = parseFloat(target);
+        function step(ts){
+          if(!start) start = ts;
+          const progress = Math.min((ts - start)/1200, 1);
+          const ease = 1 - Math.pow(1 - progress, 3);
+          fill.style.width = (pct * ease) + '%';
+          if(progress < 1) requestAnimationFrame(step);
+        }
+        requestAnimationFrame(step);
+      });
+      sbObs.unobserve(e.target);
+    }
+  });
+}, {threshold: 0.2});
+
+document.querySelectorAll('.skill-bar-section').forEach(el => sbObs.observe(el));
+
+/* ============================================================
+   CHAPTER TITLE OVERLAY — fades out as section body enters
+============================================================ */
+// Nothing extra needed — CSS sticky handles it
+
+/* ============================================================
+   CHAPTER EYEBROWS
+============================================================ */
+document.querySelectorAll('.ch-eyebrow').forEach(el => {
+  const obs = new IntersectionObserver(entries => {
+    entries.forEach(e => el.classList.toggle('visible', e.isIntersecting));
+  }, {threshold: 0.5});
+  obs.observe(el);
+});
+
 </script>
 </body>
 </html>
